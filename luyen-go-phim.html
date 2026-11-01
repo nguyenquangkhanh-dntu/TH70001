@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luyện gõ phím 10 ngón</title>
+<style>
+/* Bố cục: một cột ở giữa; danh sách 50 bài dạng lưới, màn gõ gồm bốn ô số liệu, văn bản mẫu và ô nhập liệu. */
+:root{
+  --bg:#eef4fc; --bg2:#e3edfa; --surface:#ffffff; --surface2:#f5f8fd; --line:#d9e3f1;
+  --fg:#1c2a3d; --muted:#66768c; --accent:#1f5fd1; --accent-soft:#e6eefc;
+  --ok:#0f8a5f; --ok-soft:#e5f6ee; --bad:#d12f46; --bad-soft:#fde9ec;
+  --warn:#c26a00; --warn-soft:#fff3dc; --cur:#ffd75e;
+  --shadow:0 1px 2px rgba(28,42,61,.05),0 6px 20px rgba(31,95,209,.06);
+  --f-ui:"Segoe UI",Roboto,"Helvetica Neue",Arial,Tahoma,"Liberation Sans",sans-serif;
+  --f-mono:Consolas,"Cascadia Mono","Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1622; --bg2:#121b2a; --surface:#172234; --surface2:#1b2840; --line:#2a3a55;
+  --fg:#e4ebf5; --muted:#93a3ba; --accent:#6b9bff; --accent-soft:#1d2d4d;
+  --ok:#3fcf95; --ok-soft:#14322a; --bad:#ff6b80; --bad-soft:#3a1b24;
+  --warn:#ffb547; --warn-soft:#3a2c14; --cur:#9a7a14;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1622; --bg2:#121b2a; --surface:#172234; --surface2:#1b2840; --line:#2a3a55;
+  --fg:#e4ebf5; --muted:#93a3ba; --accent:#6b9bff; --accent-soft:#1d2d4d;
+  --ok:#3fcf95; --ok-soft:#14322a; --bad:#ff6b80; --bad-soft:#3a1b24;
+  --warn:#ffb547; --warn-soft:#3a2c14; --cur:#9a7a14;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--fg);font-family:var(--f-ui);font-size:18px;line-height:1.65;min-height:100vh;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 20px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.3}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 16px;font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.soft{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.btn.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.btn.danger{color:var(--bad)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.label{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.tag{display:inline-block;font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.tag.de{background:var(--ok-soft);color:var(--ok)} .tag.kho{background:var(--bad-soft);color:var(--bad)} .tag.tb{background:var(--warn-soft);color:var(--warn)}
+
+/* thanh trên */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.brand .kb{width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-mono);font-size:15px}
+.nav{display:flex;gap:8px}
+.nav .btn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+
+/* màn bắt đầu */
+.start{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.start>*{min-width:0}
+.card{padding:24px}
+.card h2{font-size:28px;margin-bottom:6px}
+.form{display:grid;gap:14px;margin-top:18px}
+.field{display:grid;gap:4px}
+.field label{font-size:15px;font-weight:600}
+.field input,.field select{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface2);width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.err{color:var(--bad);font-size:15px;min-height:1.4em}
+.rules{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:10px;font-size:16px}
+.rules li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}
+.rules .k{font-family:var(--f-mono);font-size:13px;font-weight:700;background:var(--surface2);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;text-align:center;line-height:22px}
+.src{margin-top:16px;padding:12px 14px;border-radius:12px;background:var(--surface2);font-size:15px;display:grid;gap:8px}
+.src.warning{background:var(--warn-soft);color:var(--warn)}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* màn gõ */
+.testbar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px 16px}
+.testbar .center{text-align:center;min-width:0}
+.testbar .center h1{font-size:20px}
+.testbar .center .sub{font-size:14px;color:var(--muted)}
+.testbar .right{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{padding:12px 16px;text-align:center}
+.stat .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.stat .v small{font-size:15px;font-weight:600;margin-left:4px}
+.v.time{color:var(--accent)} .v.speed{color:var(--ok)} .v.acc{color:var(--warn)} .v.errs{color:var(--bad)}
+.v.time.low{color:var(--bad)}
+.progress{height:6px;background:var(--line);border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.text{padding:22px 24px;font-family:var(--f-mono);font-size:24px;line-height:2.1;max-height:calc(24px * 2.1 * 4 + 44px);overflow-y:auto;position:relative;word-spacing:.15em;user-select:none}
+.w{border-radius:4px;padding:0 2px;color:var(--muted)}
+.w.ok{color:var(--ok);background:var(--ok-soft)}
+.w.bad{color:var(--bad);background:var(--bad-soft);text-decoration:underline wavy;text-decoration-thickness:1px;text-underline-offset:5px}
+.w.cur{color:var(--fg);background:var(--cur)}
+.w.cur.wrong{background:var(--bad-soft);color:var(--bad)}
+.inputbox{padding:14px 16px;display:grid;gap:10px;background:var(--surface2)}
+.inputhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-right:8px}
+.count{font-size:14px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 12px;background:var(--surface);font-variant-numeric:tabular-nums}
+textarea{width:100%;min-height:110px;resize:vertical;border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:var(--f-mono);font-size:22px;line-height:1.6;background:var(--surface);color:var(--fg)}
+textarea:focus{outline:none;border-color:var(--accent)}
+.hint{font-size:15px;color:var(--muted)}
+
+/* kết quả */
+.overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));z-index:50;overflow-y:auto}
+.modal{width:min(640px,100%);padding:26px;border-radius:24px;display:grid;gap:14px;margin:auto}
+.modal h2{font-size:26px;text-align:center}
+.grade{justify-self:center;font-size:15px;font-weight:700;padding:4px 16px;border-radius:999px}
+.g-gioi{background:var(--ok-soft);color:var(--ok)} .g-kha{background:var(--accent-soft);color:var(--accent)} .g-dat{background:var(--warn-soft);color:var(--warn)} .g-chua{background:var(--bad-soft);color:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.kpi .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:14px;margin-left:3px}
+.maluot{text-align:center;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.maluot b{font-family:var(--f-mono);color:var(--fg);letter-spacing:.04em}
+.shot{display:grid;gap:8px;justify-items:center}
+.shot img{max-width:100%;border:1px solid var(--line);border-radius:10px}
+.shot a{font-size:15px;color:var(--accent)}
+.sendstat{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:15px;padding:10px 14px;border-radius:12px;background:var(--surface2)}
+.sendstat.ok{background:var(--ok-soft);color:var(--ok)} .sendstat.bad{background:var(--bad-soft);color:var(--bad)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions .btn{justify-content:center;padding:12px}
+
+/* lịch sử */
+.histhead{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;padding:20px 24px 0}
+.histtools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.histtools input{border:1px solid var(--line);border-radius:10px;padding:7px 12px;background:var(--surface2);font-size:16px;width:220px;max-width:100%}
+.summary{display:flex;gap:24px;flex-wrap:wrap;padding:12px 24px;font-size:16px}
+.summary b{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;padding:0 24px 20px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:860px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.st{font-size:13px;font-weight:700;padding:1px 8px;border-radius:999px}
+.st-ok{background:var(--ok-soft);color:var(--ok)} .st-time{background:var(--accent-soft);color:var(--accent)} .st-quit{background:var(--bad-soft);color:var(--bad)}
+.empty{padding:30px 24px;text-align:center;color:var(--muted)}
+.copybox{width:100%;min-height:120px;font-family:var(--f-mono);font-size:13px;margin-top:8px}
+footer{text-align:center;font-size:14px;color:var(--muted);padding-top:6px}
+
+@media (max-width:820px){
+  .start{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .testbar{grid-template-columns:1fr auto}
+  .testbar .center{grid-column:1/-1;order:-1}
+  .text{font-size:19px;max-height:calc(19px * 2.1 * 5 + 44px)}
+  textarea{font-size:19px}
+  .kpis{grid-template-columns:1fr 1fr}
+}
+@media (max-width:480px){.row2,.actions{grid-template-columns:1fr}.card{padding:18px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* luyện tập */
+.tiendo{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--muted)}
+.tiendo b{color:var(--fg);font-variant-numeric:tabular-nums}
+.tdbar{display:inline-block;width:120px;height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.tdbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.dslist{padding:20px 24px;display:grid;gap:14px}
+.dshead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface2);border-radius:999px;padding:5px 14px;font-size:15px;font-weight:600;color:var(--muted)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip small{font-weight:500;opacity:.8;margin-left:4px;font-variant-numeric:tabular-nums}
+.dstools{display:flex;gap:8px;flex-wrap:wrap}
+.nhom-mota{margin:0;font-size:15px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.bai{display:grid;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;border-left-width:4px;border-left-color:var(--line)}
+.bai:hover{border-color:var(--accent)}
+.bai.dat{border-left-color:var(--ok)} .bai.thu{border-left-color:var(--warn)}
+.bai .ma{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--muted)}
+.bai .ten{font-weight:700;font-size:16px;line-height:1.35}
+.bai .meta{font-size:13px;color:var(--muted)}
+.bai .kl{font-size:13px;font-weight:600;margin-top:4px;color:var(--muted)}
+.bai.dat .kl{color:var(--ok)} .bai.thu .kl{color:var(--warn)}
+.dsfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn.nho{font-size:14px;padding:5px 12px}
+.comments{background:var(--surface2);border-radius:14px;padding:14px 16px}
+.comments h3{font-size:17px;margin-bottom:6px}
+.comments ul{margin:0;padding-left:20px;display:grid;gap:4px;font-size:16px}
+.mistakes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mistakes span{font-family:var(--f-mono);font-size:15px;border:1px solid var(--line);border-radius:8px;padding:2px 8px;background:var(--surface)}
+.mistakes del{color:var(--bad)} .mistakes ins{color:var(--ok);text-decoration:none}
+.actions3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px}
+.actions3 .btn{justify-content:center;padding:12px}
+@media (max-width:560px){.actions3{grid-template-columns:1fr}.tdbar{width:70px}.dslist{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="panel topbar" id="topbar">
+    <div class="brand"><span class="kb" aria-hidden="true">F J</span><span>Luyện gõ phím 10 ngón</span></div>
+    <div class="tiendo"><span>Đã đạt mục tiêu</span><b id="td-so">0/50</b><span class="tdbar" aria-hidden="true"><i id="td-bar"></i></span></div>
+  </header>
+
+  <!-- DANH SÁCH BÀI -->
+  <section id="man-ds" class="panel dslist">
+    <div class="dshead">
+      <div class="chips" id="chips" role="tablist" aria-label="Nhóm bài"></div>
+      <div class="dstools">
+        <button class="btn soft" id="btn-tiep-chua">Bài chưa đạt tiếp theo</button>
+        <button class="btn" id="btn-ngau">Bài ngẫu nhiên</button>
+      </div>
+    </div>
+    <p class="nhom-mota" id="nhom-mota"></p>
+    <div class="grid" id="grid"></div>
+    <div class="dsfoot">
+      <span class="hint">Kỷ lục được lưu trên trình duyệt của máy này.</span>
+      <button class="btn danger nho" id="btn-xoa">Xóa tiến độ</button>
+    </div>
+  </section>
+
+  <!-- MÀN GÕ -->
+  <section id="man-go" hidden>
+    <div style="display:grid;gap:14px">
+      <div class="panel testbar">
+        <button class="btn" id="btn-ds">&larr; Chọn bài</button>
+        <div class="center">
+          <h1 id="de-tieude">-</h1>
+          <div class="sub" id="de-sub">-</div>
+        </div>
+        <div class="right">
+          <button class="btn" id="btn-lai">Làm lại</button>
+          <button class="btn soft" id="btn-tiep">Bài tiếp &rarr;</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="panel stat"><div class="label">Thời gian còn</div><div class="v time" id="s-time">0:00</div></div>
+        <div class="panel stat"><div class="label">Tốc độ</div><div class="v speed"><span id="s-wpm">-</span><small>từ/phút</small></div></div>
+        <div class="panel stat"><div class="label">Chính xác</div><div class="v acc" id="s-acc">-</div></div>
+        <div class="panel stat"><div class="label">Từ gõ sai</div><div class="v errs" id="s-err">0</div></div>
+      </div>
+      <div class="progress" aria-hidden="true"><i id="s-prog"></i></div>
+      <div class="panel text" id="van-ban" aria-label="Văn bản mẫu"></div>
+      <div class="panel inputbox">
+        <div class="inputhead">
+          <span class="label"><span class="dot"></span>Ô gõ văn bản</span>
+          <span class="count" id="s-count">0/0 từ</span>
+        </div>
+        <textarea id="o-go" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Bắt đầu gõ tại đây..."></textarea>
+        <div class="hint" id="hint">Đồng hồ bắt đầu khi bạn gõ ký tự đầu tiên.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Khoa Công nghệ Thông tin · v1</footer>
+</div>
+
+<!-- KẾT QUẢ -->
+<div class="overlay" id="kq" hidden>
+  <div class="panel modal" role="dialog" aria-modal="true" aria-labelledby="kq-title">
+    <h2 id="kq-title">Kết quả luyện tập</h2>
+    <div class="muted" style="text-align:center;font-size:15px;margin-top:-8px" id="kq-meta"></div>
+    <div class="grade" id="kq-grade"></div>
+    <div class="kpis">
+      <div class="kpi"><div class="label">Tốc độ</div><div class="v" style="color:var(--ok)"><span id="kq-wpm"></span><small>từ/phút</small></div></div>
+      <div class="kpi"><div class="label">Chính xác</div><div class="v" style="color:var(--accent)" id="kq-acc"></div></div>
+      <div class="kpi"><div class="label">Từ gõ sai</div><div class="v" style="color:var(--bad)" id="kq-err"></div></div>
+      <div class="kpi"><div class="label">Hoàn thành</div><div class="v" id="kq-done"></div></div>
+      <div class="kpi"><div class="label">Thời gian</div><div class="v" id="kq-time"></div></div>
+      <div class="kpi"><div class="label">Kỷ lục bài này</div><div class="v"><span id="kq-kl"></span><small>từ/phút</small></div></div>
+    </div>
+    <div class="comments">
+      <h3>Nhận xét</h3>
+      <ul id="kq-nx"></ul>
+      <div id="kq-sai-wrap"><div class="label" style="margin-top:10px">Các từ gõ sai</div><div class="mistakes" id="kq-sai"></div></div>
+    </div>
+    <div class="actions3">
+      <button class="btn" id="kq-ds">Chọn bài</button>
+      <button class="btn soft" id="kq-lai">Làm lại</button>
+      <button class="btn primary" id="kq-tiep">Bài tiếp theo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   BỘ 50 BÀI LUYỆN TẬP - sửa trực tiếp tại đây
+   ===================================================================== */
+const BO_BAI = {
+  // Nhóm bài: mục tiêu tốc độ (từ/phút) và độ chính xác tối thiểu (%) áp dụng cho mọi bài trong nhóm
+  nhom: [
+    {"id": 1, "ten": "Khởi động", "moTa": "Câu ngắn, chữ thường, chưa có dấu câu", "tocDoMin": 10, "tocDoMax": 15, "chinhXac": 85},
+    {"id": 2, "ten": "Cơ bản", "moTa": "Đoạn văn chữ thường, dài hơn", "tocDoMin": 15, "tocDoMax": 20, "chinhXac": 90},
+    {"id": 3, "ten": "Tăng tốc", "moTa": "Đoạn văn dài, yêu cầu gõ đều tay", "tocDoMin": 20, "tocDoMax": 25, "chinhXac": 92},
+    {"id": 4, "ten": "Chữ hoa và dấu câu", "moTa": "Viết hoa đầu câu, tên riêng, dấu chấm, phẩy, hai chấm", "tocDoMin": 15, "tocDoMax": 20, "chinhXac": 90},
+    {"id": 5, "ten": "Số và văn bản thực tế", "moTa": "Ngày tháng, số liệu, email, đơn từ, công thức", "tocDoMin": 15, "tocDoMax": 20, "chinhXac": 90}
+  ],
+  // thoiGian tính bằng giây
+  bai: [
+    {"id": "B01", "nhom": 1, "tieuDe": "Đặt tay đúng chỗ", "thoiGian": 110, "noiDung": "đặt hai ngón trỏ lên phím f và j giữ lưng thẳng mắt nhìn màn hình thả lỏng vai và gõ thật đều tay không cần vội"},
+    {"id": "B02", "nhom": 1, "tieuDe": "Buổi sáng", "thoiGian": 100, "noiDung": "buổi sáng em dậy sớm tập thể dục rồi ăn sáng cùng gia đình sau đó em đạp xe đến trường và chào thầy cô"},
+    {"id": "B03", "nhom": 1, "tieuDe": "Lớp học", "thoiGian": 110, "noiDung": "lớp học của em có ba mươi bạn ai cũng chăm chỉ và vui vẻ giờ ra chơi chúng em cùng nhau đọc sách và trò chuyện"},
+    {"id": "B04", "nhom": 1, "tieuDe": "Cây bàng", "thoiGian": 120, "noiDung": "trước nhà có một cây bàng lớn mùa hè lá xanh tỏa bóng mát mùa đông lá đỏ rơi đầy sân em thích ngồi dưới gốc cây đọc truyện"},
+    {"id": "B05", "nhom": 1, "tieuDe": "Chiếc máy tính", "thoiGian": 120, "noiDung": "máy tính giúp em học tập và làm việc nhanh hơn em dùng máy tính để soạn bài tra cứu tài liệu và gửi thư cho bạn bè"},
+    {"id": "B06", "nhom": 1, "tieuDe": "Quê hương", "thoiGian": 100, "noiDung": "quê em có dòng sông hiền hòa chảy qua cánh đồng lúa xanh mỗi chiều đàn cò trắng bay về làng trong gió mát"},
+    {"id": "B07", "nhom": 1, "tieuDe": "Mẹ của em", "thoiGian": 100, "noiDung": "mẹ là người dậy sớm nhất nhà mẹ nấu cơm giặt áo và chăm lo cho cả gia đình em thương mẹ rất nhiều"},
+    {"id": "B08", "nhom": 1, "tieuDe": "Thư viện", "thoiGian": 120, "noiDung": "thư viện trường em rất yên tĩnh có nhiều sách hay về khoa học lịch sử và văn học em thường mượn sách về nhà đọc vào cuối tuần"},
+    {"id": "B09", "nhom": 1, "tieuDe": "Cơn mưa đầu mùa", "thoiGian": 100, "noiDung": "cơn mưa đầu mùa đến thật nhanh mặt đất thơm mùi hơi nước cây cối như được tắm mát và lá non xanh mướt hơn"},
+    {"id": "B10", "nhom": 1, "tieuDe": "Mười lăm phút mỗi ngày", "thoiGian": 110, "noiDung": "mỗi ngày dành mười lăm phút luyện gõ phím sau một tháng tay sẽ quen vị trí phím và tốc độ gõ tăng lên rõ rệt"},
+    {"id": "B11", "nhom": 2, "tieuDe": "Hạt mầm nhỏ", "thoiGian": 180, "noiDung": "một hạt mầm nhỏ nằm sâu trong lòng đất tối nó không nhìn thấy ánh sáng nhưng nó cảm nhận được sức ấm của mặt trời qua từng giọt sương đêm nó tự nói với mình rằng chỉ cần kiên nhẫn vươn lên một ngày nào đó nó sẽ trở thành một cây xanh xum xuê tỏa bóng mát"},
+    {"id": "B12", "nhom": 2, "tieuDe": "Dòng sông và biển cả", "thoiGian": 160, "noiDung": "mọi dòng sông nhỏ đều khát khao chảy ra biển lớn trên hành trình ấy sông phải qua bao nhiêu gập ghềnh đá nhấp nhô và thác ghềnh nhưng sông không bao giờ dừng lại vì nó biết rằng phía cuối con đường là đại dương bao la đang chờ đón"},
+    {"id": "B13", "nhom": 2, "tieuDe": "Nụ cười buổi sáng", "thoiGian": 160, "noiDung": "mỗi buổi sáng thức dậy trao cho mình một nụ cười là trao cho tâm hồn một niềm hy vọng mới cuộc sống giống như một tấm gương bạn mỉm cười với nó nó sẽ mỉm cười lại với bạn hãy bắt đầu ngày mới bằng sự tử tế và lòng biết ơn"},
+    {"id": "B14", "nhom": 2, "tieuDe": "Giọt sương mai", "thoiGian": 140, "noiDung": "giọt sương đọng trên chiếc lá đung đưa trong gió sớm nó mong manh nhưng vô cùng trong trẻo dù cuộc đời giọt sương rất ngắn ngủi nó vẫn dâng tặng cho đời sự tinh khôi nhất trước khi tan vào ánh nắng mặt trời"},
+    {"id": "B15", "nhom": 2, "tieuDe": "Chợ quê", "thoiGian": 130, "noiDung": "chợ quê họp từ sáng sớm khi sương còn đọng trên lá người bán rau người bán cá gọi nhau rộn ràng em thích nhất là gánh xôi nóng của bà cụ đầu chợ thơm mùi lá chuối và đậu xanh"},
+    {"id": "B16", "nhom": 2, "tieuDe": "Chiếc xe đạp cũ", "thoiGian": 120, "noiDung": "chiếc xe đạp cũ đã theo em suốt những năm học cấp hai mỗi sáng em đạp xe qua con đường làng rợp bóng tre tiếng chuông xe leng keng như lời chào buổi sáng gửi đến mọi người"},
+    {"id": "B17", "nhom": 2, "tieuDe": "Bữa cơm gia đình", "thoiGian": 130, "noiDung": "bữa cơm tối là lúc cả nhà quây quần bên nhau bố kể chuyện ở cơ quan mẹ hỏi em chuyện học còn bé út thì líu lo kể về các bạn ở lớp mẫu giáo căn nhà nhỏ ấm áp tiếng cười"},
+    {"id": "B18", "nhom": 2, "tieuDe": "Tự học", "thoiGian": 120, "noiDung": "tự học là chìa khóa giúp sinh viên tiến bộ mỗi ngày hãy lập kế hoạch rõ ràng chia nhỏ mục tiêu và kiên trì thực hiện khi gặp khó khăn đừng ngại hỏi thầy cô và bạn bè"},
+    {"id": "B19", "nhom": 2, "tieuDe": "Biển đêm", "thoiGian": 110, "noiDung": "biển về đêm thật yên bình sóng vỗ nhẹ vào bờ cát những chiếc thuyền đánh cá thắp đèn sáng lấp lánh ngoài khơi gió biển mang theo vị mặn mòi và hơi mát dễ chịu"},
+    {"id": "B20", "nhom": 2, "tieuDe": "Thói quen tốt", "thoiGian": 130, "noiDung": "một thói quen tốt được hình thành từ những việc nhỏ lặp lại mỗi ngày dậy đúng giờ dọn dẹp góc học tập đọc vài trang sách trước khi ngủ những điều giản dị ấy sẽ thay đổi cuộc sống của bạn"},
+    {"id": "B21", "nhom": 3, "tieuDe": "Ngọn nến trong đêm", "thoiGian": 130, "noiDung": "trong đêm tối mịt mùng một ngọn nến nhỏ cũng đủ để thắp sáng một góc phòng đừng than phiền vì bóng tối quá bao la hãy tự mình thắp lên một đốm sáng nhỏ sự nỗ lực âm thầm của bạn hôm nay chính là ánh sáng dẫn đường cho ngày mai"},
+    {"id": "B22", "nhom": 3, "tieuDe": "Bài học về sự kiên trì", "thoiGian": 150, "noiDung": "giọt nước chảy mãi cũng làm mòn đá cứng không phải vì sức mạnh của giọt nước mà là nhờ sự kiên trì không ngừng nghỉ theo thời gian trong cuộc sống cũng vậy thành công không đến từ những hành động bộc phát mà là kết quả của vô số nỗ lực nhỏ nhặt được lặp đi lặp lại mỗi ngày"},
+    {"id": "B23", "nhom": 3, "tieuDe": "Tình bạn và sự sẻ chia", "thoiGian": 160, "noiDung": "tình bạn chân chính giống như một bàn tay ấm áp nắm lấy tay ta trong những ngày đông giá lạnh nó không cần những lời hứa hẹn xa xôi chỉ cần sự hiện diện đúng lúc khi ta vấp ngã một người bạn tốt là người nhìn thấy nỗi buồn trong mắt bạn ngay cả khi bạn đang nở nụ cười rạng rỡ nhất"},
+    {"id": "B24", "nhom": 3, "tieuDe": "Hương vị của thời gian", "thoiGian": 160, "noiDung": "mỗi mùa đi qua đều để lại một dấu ấn riêng trong lòng người mùa xuân dịu dàng với sắc hoa mùa hạ nồng nàn ánh nắng mùa thu trầm mặc lá rơi và mùa đông lặng lẽ gió rét thời gian trôi đi không bao giờ trở lại hãy trân trọng từng phút giây ta đang sống và hít thở dưới bầu trời này"},
+    {"id": "B25", "nhom": 3, "tieuDe": "Sinh viên năm nhất", "thoiGian": 150, "noiDung": "những ngày đầu bước vào giảng đường đại học ai cũng có chút bỡ ngỡ lớp học rộng hơn bạn bè đến từ nhiều nơi và cách học cũng khác trước hãy chủ động làm quen tham gia câu lạc bộ và tìm cho mình một phương pháp học phù hợp để sớm thích nghi với môi trường mới"},
+    {"id": "B26", "nhom": 3, "tieuDe": "Mạng internet", "thoiGian": 130, "noiDung": "internet giúp con người kết nối với nhau dù ở cách xa hàng nghìn cây số chỉ với một chiếc điện thoại chúng ta có thể học tập mua sắm và làm việc trực tuyến tuy nhiên cần sử dụng mạng một cách thông minh và bảo vệ thông tin cá nhân của mình"},
+    {"id": "B27", "nhom": 3, "tieuDe": "Mùa hoa sữa", "thoiGian": 120, "noiDung": "mỗi độ thu về những hàng cây hoa sữa trên phố lại nở trắng muốt hương hoa nồng nàn lan tỏa khắp các con đường người đi xa nhớ mãi mùi hương ấy như nhớ một phần kỷ niệm tuổi trẻ gắn bó với thành phố thân thương"},
+    {"id": "B28", "nhom": 3, "tieuDe": "Người thầy", "thoiGian": 120, "noiDung": "người thầy không chỉ truyền đạt kiến thức mà còn thắp lên ngọn lửa đam mê trong lòng học trò những lời động viên đúng lúc có thể giúp một sinh viên vượt qua khó khăn và tự tin bước tiếp trên con đường mình đã chọn"},
+    {"id": "B29", "nhom": 3, "tieuDe": "Bảo vệ môi trường", "thoiGian": 130, "noiDung": "bảo vệ môi trường bắt đầu từ những hành động nhỏ như mang theo bình nước cá nhân hạn chế dùng túi ni lông và phân loại rác tại nhà nếu mỗi người cùng chung tay thì không khí sẽ trong lành hơn và thành phố sẽ xanh sạch đẹp hơn"},
+    {"id": "B30", "nhom": 3, "tieuDe": "Làm việc nhóm", "thoiGian": 130, "noiDung": "làm việc nhóm hiệu quả đòi hỏi mỗi thành viên biết lắng nghe và tôn trọng ý kiến của nhau trước khi bắt đầu cả nhóm nên thống nhất mục tiêu phân chia công việc rõ ràng và hẹn lịch trao đổi định kỳ để kịp thời hỗ trợ nhau khi cần"},
+    {"id": "B31", "nhom": 4, "tieuDe": "Lời chào đầu tiên", "thoiGian": 130, "noiDung": "Chào bạn! Hôm nay là ngày đầu tiên của lớp học. Hãy ngồi thẳng lưng, đặt tay lên hàng phím cơ sở và hít thở thật đều. Chúng ta sẽ bắt đầu từ những câu ngắn, rồi tăng dần độ khó."},
+    {"id": "B32", "nhom": 4, "tieuDe": "Phím Shift", "thoiGian": 120, "noiDung": "Muốn viết chữ hoa, bạn giữ phím Shift bằng tay đối diện. Ví dụ, gõ chữ A thì dùng ngón út tay phải giữ Shift. Cách làm này giúp hai tay luôn cân bằng và gõ nhanh hơn."},
+    {"id": "B33", "nhom": 4, "tieuDe": "Dải đất hình chữ S", "thoiGian": 130, "noiDung": "Việt Nam có hình chữ S, trải dài từ Bắc vào Nam. Mỗi vùng miền đều có nét đẹp riêng: miền Bắc có bốn mùa rõ rệt, miền Trung có biển xanh nắng vàng, còn miền Nam quanh năm cây trái trĩu cành."},
+    {"id": "B34", "nhom": 4, "tieuDe": "Đồng Nai", "thoiGian": 130, "noiDung": "Đồng Nai là tỉnh công nghiệp phát triển ở vùng Đông Nam Bộ. Nơi đây có dòng sông Đồng Nai hiền hòa, Vườn quốc gia Cát Tiên rộng lớn và nhiều khu công nghiệp thu hút lao động khắp cả nước."},
+    {"id": "B35", "nhom": 4, "tieuDe": "Quy tắc dấu câu", "thoiGian": 120, "noiDung": "Khi soạn thảo văn bản, hãy nhớ quy tắc: dấu chấm, dấu phẩy luôn đặt sát chữ phía trước và cách chữ phía sau một khoảng trắng. Viết hoa chữ cái đầu câu, đầu đoạn và tên riêng."},
+    {"id": "B36", "nhom": 4, "tieuDe": "Đừng nhìn bàn phím", "thoiGian": 110, "noiDung": "Đừng nhìn bàn phím khi gõ! Lúc đầu bạn sẽ chậm và hay sai, nhưng chỉ sau vài tuần, các ngón tay sẽ tự nhớ vị trí phím. Kiên nhẫn là bí quyết quan trọng nhất."},
+    {"id": "B37", "nhom": 4, "tieuDe": "Thư cảm ơn thầy", "thoiGian": 150, "noiDung": "Kính gửi thầy, em xin chân thành cảm ơn thầy đã tận tình hướng dẫn em trong suốt học kỳ vừa qua. Nhờ những bài giảng dễ hiểu của thầy, em đã tự tin hơn khi sử dụng máy tính. Em kính chúc thầy luôn mạnh khỏe."},
+    {"id": "B38", "nhom": 4, "tieuDe": "Tết Nguyên Đán", "thoiGian": 130, "noiDung": "Tết Nguyên Đán là dịp sum họp của mọi gia đình Việt. Người lớn gói bánh chưng, trẻ em háo hức nhận lì xì, còn nhà nào cũng rực rỡ sắc đào, sắc mai. Ai đi xa cũng mong về nhà ăn Tết."},
+    {"id": "B39", "nhom": 4, "tieuDe": "Ngồi máy tính đúng cách", "thoiGian": 140, "noiDung": "Ngồi máy tính quá lâu dễ gây mỏi mắt, đau lưng và cứng cổ. Sau mỗi giờ làm việc, bạn nên đứng dậy đi lại, nhìn ra xa khoảng hai mươi giây và uống một cốc nước. Cơ thể khỏe thì đầu óc mới minh mẫn."},
+    {"id": "B40", "nhom": 4, "tieuDe": "Vì sao có QWERTY", "thoiGian": 140, "noiDung": "Bạn đã bao giờ tự hỏi: vì sao các phím trên bàn phím không xếp theo thứ tự chữ cái? Thật ra, cách bố trí QWERTY ra đời từ thời máy đánh chữ, nhằm hạn chế việc các cần chữ bị kẹt vào nhau."},
+    {"id": "B41", "nhom": 5, "tieuDe": "Thời khóa biểu", "thoiGian": 130, "noiDung": "Thứ Hai, lớp 24DTH1 học môn Tin học từ 7 giờ 30 đến 9 giờ 45 tại phòng B205. Thứ Tư học Toán cao cấp lúc 13 giờ. Sinh viên nhớ mang theo thẻ sinh viên và đến lớp trước 10 phút."},
+    {"id": "B42", "nhom": 5, "tieuDe": "Đơn hàng trực tuyến", "thoiGian": 140, "noiDung": "Đơn hàng số 2048 gồm 3 cuốn sách, 2 bút bi và 1 balo. Tổng tiền là 485.000 đồng, đã bao gồm phí giao hàng. Dự kiến giao trong 2 đến 3 ngày làm việc, khách hàng vui lòng giữ điện thoại để nhận hàng."},
+    {"id": "B43", "nhom": 5, "tieuDe": "Thông báo thư viện", "thoiGian": 120, "noiDung": "THÔNG BÁO: Thư viện trường sẽ tạm đóng cửa từ ngày 15/11 đến hết ngày 17/11 để kiểm kê sách. Bạn đọc cần gia hạn sách vui lòng liên hệ quầy thủ thư trước ngày 14/11. Xin cảm ơn!"},
+    {"id": "B44", "nhom": 5, "tieuDe": "Tin nhắn họp nhóm", "thoiGian": 140, "noiDung": "Chào bạn Lan, nhóm mình sẽ họp lúc 19 giờ tối thứ Năm qua Google Meet. Bạn chuẩn bị giúp mình phần slide từ trang 5 đến trang 9 nhé. Nếu có thay đổi, bạn nhắn vào nhóm Zalo để mọi người cùng biết."},
+    {"id": "B45", "nhom": 5, "tieuDe": "Hàm trong Excel", "thoiGian": 100, "noiDung": "Trong Excel, hàm =SUM(B2:B10) dùng để tính tổng các ô từ B2 đến B10. Hàm =AVERAGE(C2:C10) tính điểm trung bình, còn hàm =IF(D2>=5,\"Đạt\",\"Chưa đạt\") giúp xếp loại kết quả học tập."},
+    {"id": "B46", "nhom": 5, "tieuDe": "Mật khẩu mạnh", "thoiGian": 130, "noiDung": "Một mật khẩu mạnh cần có ít nhất 12 ký tự, gồm chữ hoa, chữ thường, chữ số và ký hiệu như @, # hoặc !. Ví dụ: Hoc@TinHoc2026. Tuyệt đối không chia sẻ mật khẩu cho người khác, kể cả bạn thân."},
+    {"id": "B47", "nhom": 5, "tieuDe": "Sơ yếu lý lịch", "thoiGian": 110, "noiDung": "Họ và tên: Trần Minh Khoa. Ngày sinh: 12/05/2006. Quê quán: Biên Hòa, Đồng Nai. Số điện thoại: 0912 345 678. Sở thích: đọc sách, chơi cầu lông và tìm hiểu công nghệ mới."},
+    {"id": "B48", "nhom": 5, "tieuDe": "Kết quả khảo sát", "thoiGian": 130, "noiDung": "Kết quả khảo sát 120 sinh viên cho thấy: 68% dùng máy tính hằng ngày, 25% dùng vài lần mỗi tuần và 7% hiếm khi sử dụng. Có 85 bạn (khoảng 71%) mong muốn được học thêm kỹ năng gõ phím nhanh."},
+    {"id": "B49", "nhom": 5, "tieuDe": "Đơn xin nghỉ học", "thoiGian": 130, "noiDung": "Kính gửi: Cô chủ nhiệm lớp 24DTH2. Em tên là Lê Thu Hà, MSSV 2401040156. Em xin phép nghỉ học ngày 20/11/2026 vì lý do sức khỏe. Em sẽ chép bài và hoàn thành bài tập đầy đủ. Em xin cảm ơn cô."},
+    {"id": "B50", "nhom": 5, "tieuDe": "Máy tính cá nhân", "thoiGian": 150, "noiDung": "Năm 1981, IBM giới thiệu máy tính cá nhân IBM PC. Đến năm 1984, Apple ra mắt Macintosh với giao diện đồ họa và chuột. Ngày nay, một chiếc điện thoại thông minh đã mạnh hơn hàng nghìn lần so với những chiếc máy tính đầu tiên ấy."}
+  ]
+};
+</script>
+
+<script>
+(() => {
+"use strict";
+const K_KL = "luyengo.kyluc", K_NHOM = "luyengo.nhom";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nfc = s => s.normalize("NFC");
+const khongDau = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+const boDauCau = s => s.replace(/[.,;:!?"'()\[\]…]/g, "");
+const fmtTime = sec => { sec = Math.max(0, Math.ceil(sec)); return Math.floor(sec/60) + ":" + String(sec%60).padStart(2,"0"); };
+const thoiLuong = s => { const m=Math.floor(s/60), g=s%60; return (m?m+" phút":"")+(m&&g?" ":"")+(g?g+" giây":""); };
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+
+const NHOM = BO_BAI.nhom;
+const BAI = BO_BAI.bai.map(b => ({ ...b, noiDung: nfc(b.noiDung.trim().replace(/\s+/g, " ")) }));
+const nhomCua = b => NHOM.find(n => n.id === b.nhom) || NHOM[0];
+let kyLuc = store.get(K_KL, {});
+const S = { cheDo:"ngau", bai:null, tu:[], batDau:0, timer:0, ketThuc:true, phanTich:null, nhom: store.get(K_NHOM, 0) };
+
+/* ---------- Danh sách bài ---------- */
+function veDanhSach(){
+  const soDat = BAI.filter(b => kyLuc[b.id] && kyLuc[b.id].dat).length;
+  $("#td-so").textContent = `${soDat}/${BAI.length}`;
+  $("#td-bar").style.width = (soDat / BAI.length * 100) + "%";
+  const tabs = [{ id:0, ten:"Tất cả" }, ...NHOM];
+  $("#chips").innerHTML = tabs.map(n => {
+    const ds = n.id ? BAI.filter(b => b.nhom === n.id) : BAI;
+    const dat = ds.filter(b => kyLuc[b.id] && kyLuc[b.id].dat).length;
+    return `<button class="chip" role="tab" data-nhom="${n.id}" aria-selected="${S.nhom === n.id}">${n.id ? "Nhóm " + n.id + ": " : ""}${esc(n.ten)}<small>${dat}/${ds.length}</small></button>`;
+  }).join("");
+  const nh = NHOM.find(n => n.id === S.nhom);
+  $("#nhom-mota").textContent = nh ? `${nh.moTa}. Mục tiêu ${nh.tocDoMin}-${nh.tocDoMax} từ/phút, chính xác từ ${nh.chinhXac}%.`
+                                   : "Chọn một bài để bắt đầu. Các nhóm tăng dần độ khó, nên luyện từ Nhóm 1.";
+  const ds = S.nhom ? BAI.filter(b => b.nhom === S.nhom) : BAI;
+  $("#grid").innerHTML = ds.map(b => {
+    const k = kyLuc[b.id], cls = k ? (k.dat ? "dat" : "thu") : "";
+    const kl = k ? `${k.dat ? "Đạt" : "Chưa đạt"} · ${k.tocDo} từ/phút · ${k.chinhXac}%` : "Chưa luyện";
+    return `<button class="bai ${cls}" data-id="${b.id}"><span class="ma">${b.id} · Nhóm ${b.nhom}</span><span class="ten">${esc(b.tieuDe)}</span><span class="meta">${b.noiDung.split(" ").length} từ · ${thoiLuong(b.thoiGian)}</span><span class="kl">${kl}</span></button>`;
+  }).join("");
+}
+$("#chips").addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; S.nhom = +c.dataset.nhom; store.set(K_NHOM, S.nhom); veDanhSach(); });
+$("#grid").addEventListener("click", e => { const c = e.target.closest(".bai"); if (c) moBai(c.dataset.id, "ds"); });
+// Bài ngẫu nhiên: lấy trong cả 50 bài, tránh lặp lại bài vừa gõ
+const ngauNhien = (ds = BAI) => { const c = ds.filter(b => b !== S.bai); return (c.length ? c : ds)[Math.floor(Math.random() * (c.length || ds.length))].id; };
+$("#btn-ngau").onclick = () => moBai(ngauNhien(S.nhom ? BAI.filter(b => b.nhom === S.nhom) : BAI), "ngau");
+$("#btn-tiep-chua").onclick = () => {
+  const ds = S.nhom ? BAI.filter(b => b.nhom === S.nhom) : BAI;
+  const b = ds.find(b => !(kyLuc[b.id] && kyLuc[b.id].dat)) || ds[0];
+  moBai(b.id, "ds");
+};
+let xoaHen = 0;
+$("#btn-xoa").onclick = () => {
+  const b = $("#btn-xoa");
+  if (!xoaHen) { b.textContent = "Bấm lần nữa để xóa"; xoaHen = setTimeout(() => { b.textContent = "Xóa tiến độ"; xoaHen = 0; }, 3000); return; }
+  clearTimeout(xoaHen); xoaHen = 0; b.textContent = "Xóa tiến độ";
+  kyLuc = {}; store.del(K_KL); veDanhSach();
+};
+
+/* ---------- Điều hướng ---------- */
+function hien(man){
+  $("#man-ds").hidden = man !== "ds";
+  $("#man-go").hidden = man !== "go";
+  $("#topbar").hidden = man === "go";
+  $("#kq").hidden = true;
+  if (man === "ds") { clearInterval(S.timer); S.ketThuc = true; veDanhSach(); }
+  window.scrollTo(0, 0);
+}
+$("#btn-ds").onclick = () => hien("ds");
+$("#btn-lai").onclick = () => moBai(S.bai.id);
+$("#btn-tiep").onclick = () => moBaiTiep();
+// Vào từ danh sách: bài kế tiếp theo thứ tự. Vào ngẫu nhiên: bài ngẫu nhiên khác.
+function moBaiTiep(){
+  if (S.cheDo === "ngau") moBai(ngauNhien(), "ngau");
+  else moBai(BAI[(BAI.indexOf(S.bai) + 1) % BAI.length].id, "ds");
+}
+
+/* ---------- Mở bài ---------- */
+function moBai(id, cheDo){
+  const b = BAI.find(x => x.id === id); if (!b) return;
+  if (cheDo) S.cheDo = cheDo;
+  $("#btn-tiep").innerHTML = S.cheDo === "ngau" ? "Bài khác &rarr;" : "Bài tiếp &rarr;";
+  const nh = nhomCua(b);
+  S.bai = b; S.tu = b.noiDung.split(" ");
+  S.batDau = 0; S.ketThuc = false; clearInterval(S.timer);
+  $("#de-tieude").textContent = b.tieuDe;
+  $("#de-sub").textContent = `${b.id} · ${thoiLuong(b.thoiGian)} · ${S.tu.length} từ · Mục tiêu ${nh.tocDoMin}-${nh.tocDoMax} từ/phút, chính xác ${nh.chinhXac}%`;
+  $("#van-ban").innerHTML = S.tu.map((w,i) => `<span class="w" id="w${i}">${esc(w)}</span>`).join(" ");
+  $("#van-ban").scrollTop = 0;
+  const o = $("#o-go"); o.value = ""; o.disabled = false;
+  $("#hint").textContent = "Đồng hồ bắt đầu khi bạn gõ ký tự đầu tiên.";
+  hien("go"); capNhat(); o.focus();
+}
+
+/* ---------- Phân tích bài gõ ---------- */
+function soKyTuKhop(a, b){ let c = 0; const n = Math.min(a.length, b.length); for (let i=0;i<n;i++) if (a[i]===b[i]) c++; return c; }
+function phanTich(raw){
+  const v = nfc(raw), tu = S.tu, n = tu.length;
+  const gon = v.replace(/^\s+/, "");
+  const parts = gon === "" ? [""] : gon.split(/\s+/);
+  let xong = parts.length - 1, hienTai = parts[parts.length-1];
+  if (xong > n) { xong = n; hienTai = ""; }
+  const loiCach = (v.match(/\s{2,}/g) || []).length + (/^\s/.test(v) ? 1 : 0);
+  let dung = 0, sai = [], kyTuDung = 0, kyTuGo = 0;
+  const trangThai = [];
+  for (let i=0;i<xong;i++){
+    const a = parts[i], b = tu[i];
+    kyTuGo += a.length + 1;
+    if (a === b) { dung++; kyTuDung += a.length + 1; trangThai.push("ok"); }
+    else { kyTuDung += soKyTuKhop(a,b) + 1; sai.push({ i, go:a, dung:b }); trangThai.push("bad"); }
+  }
+  kyTuGo += loiCach;
+  let hienTaiSai = false;
+  if (xong < n && hienTai) {
+    const b = tu[xong];
+    hienTaiSai = !khongDau(b).startsWith(khongDau(hienTai));
+    kyTuGo += hienTai.length;
+    kyTuDung += soKyTuKhop(khongDau(hienTai), khongDau(b));
+  }
+  const xongHet = xong >= n || (xong === n-1 && hienTai === tu[n-1]);
+  if (xong === n-1 && hienTai === tu[n-1]) { dung++; trangThai.push("ok"); }
+  return { xong, hienTai, hienTaiSai, dung, sai, kyTuDung, kyTuGo, loiCach, trangThai, xongHet,
+           chinhXac: kyTuGo ? Math.round(kyTuDung / kyTuGo * 1000)/10 : 100 };
+}
+
+/* ---------- Cập nhật giao diện ---------- */
+function tgDaDung(){ return S.batDau ? Math.min((Date.now() - S.batDau)/1000, S.bai.thoiGian) : 0; }
+function capNhat(){
+  const p = S.phanTich = phanTich($("#o-go").value), n = S.tu.length;
+  for (let i=0;i<n;i++){
+    const el = document.getElementById("w"+i);
+    let c = "w";
+    if (i < p.trangThai.length) c += " " + p.trangThai[i];
+    else if (i === p.xong && !S.ketThuc) c += " cur" + (p.hienTaiSai ? " wrong" : "");
+    if (el.className !== c) el.className = c;
+  }
+  const cur = document.getElementById("w" + Math.min(p.xong, n-1));
+  if (cur) cuon(cur);
+  $("#s-err").textContent = p.sai.length;
+  $("#s-acc").textContent = p.kyTuGo ? p.chinhXac + "%" : "-";
+  $("#s-count").textContent = `${Math.min(p.xong, n)}/${n} từ`;
+  $("#s-prog").style.width = (Math.min(p.xong, n) / n * 100) + "%";
+  dongHo();
+}
+function dongHo(){
+  const tg = tgDaDung(), con = S.bai.thoiGian - tg;
+  const t = $("#s-time"); t.textContent = fmtTime(con); t.classList.toggle("low", !!S.batDau && con <= 10);
+  const p = S.phanTich;
+  $("#s-wpm").textContent = tg >= 3 && p ? Math.round(p.dung / (tg/60)) : "-";
+}
+function cuon(el){
+  const box = $("#van-ban"), lh = el.offsetHeight * 1.6 || 40;
+  const top = el.offsetTop;
+  if (top - box.scrollTop > box.clientHeight - lh * 2 || top < box.scrollTop) box.scrollTop = Math.max(0, top - lh);
+}
+
+/* ---------- Ô gõ ---------- */
+const o = $("#o-go");
+o.addEventListener("input", () => {
+  if (S.ketThuc) return;
+  if (!S.batDau && o.value.trim()) {
+    S.batDau = Date.now();
+    $("#hint").textContent = "Đang luyện. Gõ xong một từ thì nhấn phím cách.";
+    S.timer = setInterval(() => { dongHo(); if (tgDaDung() >= S.bai.thoiGian) ketThuc("het-gio"); }, 200);
+  }
+  capNhat();
+  if (S.phanTich.xongHet) ketThuc("xong");
+});
+o.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+["paste","drop"].forEach(ev => o.addEventListener(ev, e => { e.preventDefault(); $("#hint").textContent = "Không dán văn bản. Hãy tự gõ để luyện tay."; }));
+$("#van-ban").addEventListener("copy", e => e.preventDefault());
+
+/* ---------- Đánh giá ---------- */
+function xepLoai(wpm, acc, nh){
+  if (acc >= nh.chinhXac && wpm > nh.tocDoMax) return "Vượt mục tiêu";
+  if (acc >= nh.chinhXac && wpm >= nh.tocDoMin) return "Đạt mục tiêu";
+  return "Chưa đạt";
+}
+function nhanXet(r, p, nh, kyLucMoi){
+  const nx = [];
+  if (r.xepLoai === "Vượt mục tiêu") nx.push("Xuất sắc! Bạn đã vượt mục tiêu của bài. Chuyển sang bài tiếp theo để thử sức.");
+  else if (r.xepLoai === "Đạt mục tiêu") nx.push(`Tốt lắm, bạn đã đạt mục tiêu. Luyện thêm để vượt mức ${nh.tocDoMax} từ/phút.`);
+  else nx.push("Chưa đạt mục tiêu. Luyện lại bài này vài lần cho tay quen rồi thử tiếp nha bạn.");
+  if (r.chinhXac < nh.chinhXac) nx.push(`Độ chính xác ${r.chinhXac}%, cần từ ${nh.chinhXac}%. Giảm tốc độ, ưu tiên gõ đúng trước.`);
+  if (r.tocDo < nh.tocDoMin) nx.push(`Tốc độ ${r.tocDo} từ/phút, cần tối thiểu ${nh.tocDoMin} từ/phút. Tập không nhìn bàn phím để tăng tốc.`);
+  const dau = p.sai.filter(s => khongDau(s.go) === khongDau(s.dung)).length;
+  const hoa = p.sai.filter(s => s.go.toLowerCase() === s.dung.toLowerCase()).length;
+  const cau = p.sai.filter(s => khongDau(s.go) !== khongDau(s.dung) && boDauCau(s.go) === boDauCau(s.dung)).length;
+  if (dau) nx.push(`${dau} từ sai dấu tiếng Việt. Xem lại quy tắc Telex (s, f, r, x, j) hoặc VNI (1-5).`);
+  if (hoa) nx.push(`${hoa} từ sai chữ hoa/thường. Giữ Shift bằng tay đối diện với chữ cần viết hoa.`);
+  if (cau) nx.push(`${cau} từ thiếu hoặc sai dấu câu. Dấu câu đặt sát chữ phía trước.`);
+  if (p.loiCach) nx.push(`Có ${p.loiCach} chỗ thừa khoảng trắng. Mỗi từ chỉ cách nhau một lần nhấn phím cách.`);
+  if (r.trangThai === "Hết giờ") nx.push(`Hết giờ khi bạn hoàn thành ${r.hoanThanh}% bài.`);
+  else { const du = S.bai.thoiGian - r.thoiGianDung; if (du >= 5) nx.push(`Hoàn thành sớm ${fmtTime(du)} so với thời gian của bài.`); }
+  if (kyLucMoi) nx.push("Kỷ lục mới cho bài này!");
+  return nx;
+}
+function ketThuc(lyDo){
+  if (S.ketThuc) return;
+  S.ketThuc = true; clearInterval(S.timer);
+  o.disabled = true;
+  const p = phanTich(o.value), n = S.tu.length, nh = nhomCua(S.bai);
+  const tg = Math.max(tgDaDung(), 1);
+  const soDaGo = Math.min(p.xong + (p.xongHet && p.xong < n ? 1 : 0), n);
+  const r = {
+    thoiGianDung: Math.round(tg), tocDo: Math.round(p.dung / (tg/60)),
+    chinhXac: p.chinhXac, tuSai: p.sai.length, hoanThanh: Math.round(soDaGo / n * 100),
+    trangThai: lyDo === "xong" ? "Hoàn thành" : "Hết giờ"
+  };
+  r.xepLoai = xepLoai(r.tocDo, r.chinhXac, nh);
+  const dat = r.xepLoai !== "Chưa đạt";
+  const cu = kyLuc[S.bai.id];
+  const tot = !cu || (dat && !cu.dat) || (dat === cu.dat && r.tocDo > cu.tocDo);
+  const kyLucMoi = !!cu && tot;
+  kyLuc[S.bai.id] = tot ? { tocDo:r.tocDo, chinhXac:r.chinhXac, dat, lan:(cu ? cu.lan : 0) + 1 } : { ...cu, lan: cu.lan + 1 };
+  store.set(K_KL, kyLuc);
+  capNhat();
+  const k = kyLuc[S.bai.id];
+  $("#kq-meta").textContent = `${S.bai.id} · ${S.bai.tieuDe} · Lần luyện thứ ${k.lan}`;
+  const g = $("#kq-grade"); g.textContent = "Xếp loại: " + r.xepLoai;
+  g.className = "grade " + ({ "Vượt mục tiêu":"g-gioi", "Đạt mục tiêu":"g-kha" }[r.xepLoai] || "g-chua");
+  $("#kq-wpm").textContent = r.tocDo; $("#kq-acc").textContent = r.chinhXac + "%";
+  $("#kq-err").textContent = r.tuSai; $("#kq-done").textContent = r.hoanThanh + "%";
+  $("#kq-time").textContent = fmtTime(r.thoiGianDung); $("#kq-kl").textContent = k.tocDo;
+  $("#kq-nx").innerHTML = nhanXet(r, p, nh, kyLucMoi).map(x => `<li>${esc(x)}</li>`).join("");
+  $("#kq-sai-wrap").hidden = !p.sai.length;
+  $("#kq-sai").innerHTML = p.sai.slice(0, 12).map(s => `<span><del>${esc(s.go)}</del> → <ins>${esc(s.dung)}</ins></span>`).join("") + (p.sai.length > 12 ? `<span>+${p.sai.length-12} từ</span>` : "");
+  $("#kq-tiep").textContent = S.cheDo === "ngau" ? "Bài ngẫu nhiên khác" : "Bài tiếp theo";
+  $("#kq").hidden = false; (dat ? $("#kq-tiep") : $("#kq-lai")).focus();
+}
+$("#kq-ds").onclick = () => hien("ds");
+$("#kq-lai").onclick = () => moBai(S.bai.id);
+$("#kq-tiep").onclick = () => moBaiTiep();
+
+/* ---------- Khởi động: vào thẳng một bài ngẫu nhiên ---------- */
+veDanhSach();
+moBai(ngauNhien(), "ngau");
+})();
+</script>
+</body>
+</html>
